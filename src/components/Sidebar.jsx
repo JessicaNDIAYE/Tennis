@@ -6,10 +6,13 @@ const navItems = [
   { id: "scoreboard", label: "Classement" },
   { id: "matches",    label: "Mes Matchs" },
   { id: "players",    label: "Joueurs" },
+  { id: "friends",    label: "Amis" },
   { id: "badges",     label: "Badges" },
   { id: "tips",       label: "Conseils du Jour" },
   { id: "news",       label: "Actualités" },
   { id: "watch",      label: "Ma Montre" },
+  { id: "rules",      label: "Règles du Tennis" },
+  { id: "profile",    label: "Mon Profil" },
 ];
 
 export default function Sidebar({ activePage, onNavigate }) {

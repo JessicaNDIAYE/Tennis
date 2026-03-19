@@ -12,6 +12,9 @@ import BadgesPage from "./components/BadgesPage";
 import TipsPage from "./components/TipsPage";
 import NewsPage from "./components/NewsPage";
 import WatchPage from "./pages/WatchPage";
+import FriendsPage from "./components/FriendsPage";
+import RulesPage from "./components/RulesPage";
+import ProfilePage from "./components/ProfilePage";
 
 const pages = {
   dashboard: Dashboard,
@@ -22,17 +25,23 @@ const pages = {
   tips: TipsPage,
   news: NewsPage,
   watch: WatchPage,
+  friends: FriendsPage,
+  rules: RulesPage,
+  profile: ProfilePage,
 };
 
 const navItems = [
   { id: "dashboard", icon: "🏠", label: "Accueil" },
   { id: "scoreboard", icon: "🏆", label: "Classement" },
   { id: "matches", icon: "🎾", label: "Matchs" },
+  { id: "friends", icon: "👥", label: "Amis" },
+  { id: "profile", icon: "👤", label: "Profil" },
   { id: "players", icon: "👥", label: "Joueurs" },
   { id: "badges", icon: "🎖️", label: "Badges" },
   { id: "tips", icon: "💡", label: "Conseils" },
   { id: "news", icon: "📰", label: "Actualités" },
   { id: "watch", icon: "⌚", label: "Ma Montre" },
+  { id: "rules", icon: "📖", label: "Règles" },
 ];
 
 function MobileNav({ activePage, onNavigate }) {
@@ -55,8 +64,14 @@ function Header({ activePage, onNavigate }) {
   const [showMenu, setShowMenu] = useState(false);
   const titles = {
     dashboard: "Tableau de Bord", scoreboard: "Classement", matches: "Mes Matchs",
-    players: "Joueurs", badges: "Badges", tips: "Conseils", news: "Actualités", watch: "Ma Montre",
+    players: "Joueurs", badges: "Badges", tips: "Conseils", news: "Actualités",
+    watch: "Ma Montre", friends: "Amis", rules: "Règles du Tennis", profile: "Mon Profil",
   };
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const avatarPublicUrl = profile?.avatar_url
+    ? `${supabaseUrl}/storage/v1/object/public/avatars/${profile.avatar_url}`
+    : null;
 
   return (
     <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
@@ -65,7 +80,7 @@ function Header({ activePage, onNavigate }) {
           <span className="text-lg">🎾</span>
         </div>
         <div>
-          <h1 className="font-black text-court-green text-lg leading-none">{titles[activePage]}</h1>
+          <h1 className="font-black text-court-green text-lg leading-none">{titles[activePage] || "ACE Tennis Hub"}</h1>
           <p className="text-gray-400 text-xs">ACE Tennis Hub</p>
         </div>
       </div>
@@ -77,9 +92,11 @@ function Header({ activePage, onNavigate }) {
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="w-9 h-9 bg-court-blue rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+            className="w-9 h-9 bg-court-blue rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md overflow-hidden border-2 border-white"
           >
-            {profile?.avatar_emoji || "🎾"}
+            {avatarPublicUrl
+              ? <img src={avatarPublicUrl} alt="" className="w-full h-full object-cover" />
+              : <span>{profile?.avatar_emoji || "🎾"}</span>}
           </button>
           {showMenu && (
             <div className="absolute right-0 top-12 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 w-52">
@@ -87,14 +104,28 @@ function Header({ activePage, onNavigate }) {
                 <p className="font-bold text-gray-800 text-sm">{profile?.username}</p>
                 <p className="text-xs text-gray-400">{profile?.level}</p>
               </div>
+              <button onClick={() => { onNavigate("profile"); setShowMenu(false); }}
+                className="w-full text-left px-4 py-3 text-sm hover:bg-court-cream transition-colors flex items-center gap-2">
+                👤 Mon Profil
+              </button>
+              <button onClick={() => { onNavigate("friends"); setShowMenu(false); }}
+                className="w-full text-left px-4 py-3 text-sm hover:bg-court-cream transition-colors flex items-center gap-2">
+                👥 Mes Amis
+              </button>
               <button onClick={() => { onNavigate("watch"); setShowMenu(false); }}
                 className="w-full text-left px-4 py-3 text-sm hover:bg-court-cream transition-colors flex items-center gap-2">
                 ⌚ Ma Montre
               </button>
-              <button onClick={() => { signOut(); setShowMenu(false); }}
-                className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2">
-                🚪 Se déconnecter
+              <button onClick={() => { onNavigate("rules"); setShowMenu(false); }}
+                className="w-full text-left px-4 py-3 text-sm hover:bg-court-cream transition-colors flex items-center gap-2">
+                📖 Règles du Tennis
               </button>
+              <div className="border-t border-gray-100">
+                <button onClick={() => { signOut(); setShowMenu(false); }}
+                  className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2">
+                  🚪 Se déconnecter
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -179,6 +179,54 @@ export function IconScoreboard({ size = 22, active = false }) {
   );
 }
 
+export function IconProfile({ size = 22, active = false }) {
+  const c = active ? "#F6ED5B" : "white";
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="8" r="4" stroke={c} strokeWidth="2"
+        fill={active ? "rgba(246,237,91,0.2)" : "rgba(255,255,255,0.1)"} />
+      <path d="M4 20 Q4 14 12 14 Q20 14 20 20" stroke={c} strokeWidth="2" strokeLinecap="round" fill="none" />
+      {/* Camera icon for photo */}
+      <circle cx="18" cy="6" r="3" fill={active ? "#F6ED5B" : "#A8D84E"} />
+      <circle cx="18" cy="6" r="1.2" fill={active ? "#1E4B33" : "white"} />
+    </svg>
+  );
+}
+
+export function IconFriends({ size = 22, active = false }) {
+  const c = active ? "#F6ED5B" : "white";
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="8" cy="7" r="3" stroke={c} strokeWidth="1.8"
+        fill={active ? "rgba(246,237,91,0.2)" : "rgba(255,255,255,0.1)"} />
+      <path d="M2 19 Q2 14 8 14 Q14 14 14 19" stroke={c} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <circle cx="17" cy="6" r="2.5" stroke={c} strokeWidth="1.5"
+        fill={active ? "rgba(246,237,91,0.1)" : "rgba(255,255,255,0.08)"} />
+      <path d="M14 18 Q14 14 17 14 Q20 14 20 18" stroke={c} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      {/* Heart */}
+      <path d="M18 9.5 Q19 8.5 20 9.5 Q21 10.5 20 12 L18 13.5 L16 12 Q15 10.5 16 9.5 Q17 8.5 18 9.5Z"
+        fill={active ? "#F6ED5B" : "#A8D84E"} />
+    </svg>
+  );
+}
+
+export function IconRules({ size = 22, active = false }) {
+  const c = active ? "#F6ED5B" : "white";
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="4" y="2" width="16" height="20" rx="2.5" stroke={c} strokeWidth="1.8"
+        fill={active ? "rgba(246,237,91,0.1)" : "rgba(255,255,255,0.08)"} />
+      <line x1="8" y1="7" x2="16" y2="7" stroke={c} strokeWidth="1.4" strokeLinecap="round" />
+      <line x1="8" y1="11" x2="16" y2="11" stroke={c} strokeWidth="1.4" strokeLinecap="round" />
+      <line x1="8" y1="15" x2="13" y2="15" stroke={c} strokeWidth="1.4" strokeLinecap="round" />
+      {/* Tennis ball bookmark */}
+      <circle cx="16" cy="16.5" r="3.5" fill={active ? "#F6ED5B" : "#A8D84E"} />
+      <path d="M14.5 15.5 Q16 14.8 17.5 15.5" stroke="white" strokeWidth="0.7" fill="none" strokeLinecap="round" />
+      <path d="M14.5 17.5 Q16 18.2 17.5 17.5" stroke="white" strokeWidth="0.7" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Map for sidebar
 export const NAV_ICONS = {
   dashboard:  IconHome,
@@ -189,4 +237,7 @@ export const NAV_ICONS = {
   tips:       IconBulb,
   news:       IconNews,
   watch:      IconWatch,
+  friends:    IconFriends,
+  rules:      IconRules,
+  profile:    IconProfile,
 };
