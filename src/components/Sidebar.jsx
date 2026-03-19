@@ -8,6 +8,7 @@ const navItems = [
   { id: "badges", icon: "🎖️", label: "Badges" },
   { id: "tips", icon: "💡", label: "Conseils du Jour" },
   { id: "news", icon: "📰", label: "Actualités" },
+  { id: "watch", icon: "⌚", label: "Ma Montre" },
 ];
 
 export default function Sidebar({ activePage, onNavigate }) {

@@ -1,52 +1,44 @@
 import { useState } from "react";
-import { tips } from "../data/mockData";
+import { useTips } from "../hooks/useTennisData";
 import { TennisBall, TennisRacket, WavyPattern } from "./TennisIllustrations";
+import ArticleModal from "./ArticleModal";
 
 const categories = ["Tous", "Technique", "Tactique", "Service", "Mental", "Fitness"];
 const levels = ["Tous niveaux", "Débutant", "Intermédiaire", "Avancé"];
 
-function TipCard({ tip, isFeatured }) {
+function TipCard({ tip, isFeatured, onRead }) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
 
   if (isFeatured) {
     return (
       <div
-        className="relative rounded-3xl overflow-hidden p-8 text-white col-span-full min-h-[220px] flex flex-col justify-between"
+        className="relative rounded-3xl overflow-hidden p-8 text-white col-span-full cursor-pointer hover:scale-[1.01] transition-transform"
         style={{ background: `linear-gradient(135deg, ${tip.color}, ${tip.color}99)` }}
+        onClick={onRead}
       >
         <WavyPattern />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="bg-white/20 text-white text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest">
-              ✨ Conseil du Jour
-            </span>
-            <span className="bg-white/10 text-white/70 text-xs font-bold px-3 py-1 rounded-full">{tip.category}</span>
-            <span className="bg-white/10 text-white/70 text-xs font-bold px-3 py-1 rounded-full">{tip.level}</span>
-          </div>
-          <div className="flex gap-4 items-start">
-            <span className="text-6xl">{tip.emoji}</span>
-            <div>
-              <h3 className="font-black text-2xl md:text-3xl mb-2">{tip.title}</h3>
-              <p className="text-white/80 text-base leading-relaxed max-w-2xl">{tip.description}</p>
+        <div className="relative z-10 flex flex-col md:flex-row gap-6 items-start">
+          <div className="text-7xl flex-shrink-0">{tip.emoji}</div>
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-3 flex-wrap">
+              <span className="bg-white/20 text-white text-xs font-black px-3 py-1.5 rounded-full animate-pulse">
+                ✨ Conseil du Jour
+              </span>
+              <span className="bg-white/10 text-white/70 text-xs font-bold px-3 py-1 rounded-full">{tip.category}</span>
+              <span className="bg-white/10 text-white/70 text-xs font-bold px-3 py-1 rounded-full">{tip.level}</span>
             </div>
-          </div>
-        </div>
-        <div className="relative z-10 flex items-center gap-3 mt-4">
-          <span className="text-white/50 text-sm">⏱ {tip.duration} d'entraînement</span>
-          <div className="ml-auto flex gap-2">
-            <button
-              onClick={() => setLiked(!liked)}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${liked ? "bg-white text-court-green" : "bg-white/20 text-white hover:bg-white/30"}`}
-            >
-              {liked ? "❤️ Aimé !" : "🤍 J'aime"}
-            </button>
-            <button
-              onClick={() => setSaved(!saved)}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${saved ? "bg-white text-court-blue" : "bg-white/20 text-white hover:bg-white/30"}`}
-            >
-              {saved ? "🔖 Sauvegardé" : "📌 Sauvegarder"}
-            </button>
+            <h3 className="font-black text-2xl text-white mb-2">{tip.title}</h3>
+            <p className="text-white/80 leading-relaxed mb-4">{tip.summary}</p>
+            <div className="flex items-center gap-3">
+              <span className="text-white/50 text-sm">⏱ {tip.duration_min} min</span>
+              <button
+                onClick={e => { e.stopPropagation(); onRead(); }}
+                className="ml-auto bg-white text-gray-800 font-black px-5 py-2 rounded-xl text-sm hover:bg-court-yellow transition-colors"
+              >
+                📖 Lire l'article complet
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -54,10 +46,8 @@ function TipCard({ tip, isFeatured }) {
   }
 
   return (
-    <div className="card hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
-      {/* Color top */}
+    <div className="card hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
       <div className="h-1.5 rounded-t-xl -mx-5 -mt-5 mb-4 rounded-t-2xl" style={{ background: tip.color }} />
-
       <div className="flex items-start gap-3 mb-3">
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
           style={{ background: `${tip.color}22` }}>
@@ -78,23 +68,22 @@ function TipCard({ tip, isFeatured }) {
           </h3>
         </div>
       </div>
-
-      <p className="text-gray-500 text-sm leading-relaxed mb-4">{tip.description}</p>
-
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-gray-400">⏱ {tip.duration}</span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setLiked(!liked)}
-            className="text-lg hover:scale-110 transition-transform"
-          >
+      <p className="text-gray-500 text-sm leading-relaxed mb-4 flex-1">{tip.summary}</p>
+      <div className="flex items-center justify-between text-xs mt-auto pt-3 border-t border-gray-100">
+        <span className="text-gray-400">⏱ {tip.duration_min} min</span>
+        <div className="flex gap-2 items-center">
+          <button onClick={() => setLiked(!liked)} className="text-lg hover:scale-110 transition-transform">
             {liked ? "❤️" : "🤍"}
           </button>
-          <button
-            onClick={() => setSaved(!saved)}
-            className="text-lg hover:scale-110 transition-transform"
-          >
+          <button onClick={() => setSaved(!saved)} className="text-lg hover:scale-110 transition-transform">
             {saved ? "🔖" : "📌"}
+          </button>
+          <button
+            onClick={onRead}
+            className="ml-2 text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-colors"
+            style={{ background: tip.color }}
+          >
+            Lire →
           </button>
         </div>
       </div>
@@ -103,8 +92,10 @@ function TipCard({ tip, isFeatured }) {
 }
 
 export default function TipsPage() {
+  const { tips, loading } = useTips();
   const [category, setCategory] = useState("Tous");
   const [level, setLevel] = useState("Tous niveaux");
+  const [selectedTip, setSelectedTip] = useState(null);
 
   const filtered = tips.filter(t =>
     (category === "Tous" || t.category === category) &&
@@ -113,6 +104,10 @@ export default function TipsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {selectedTip && (
+        <ArticleModal article={selectedTip} type="tip" onClose={() => setSelectedTip(null)} />
+      )}
+
       {/* Header */}
       <div className="relative rounded-3xl overflow-hidden p-8 flex items-center gap-6"
         style={{ background: "linear-gradient(135deg, #1E4B33, #2D6B4A)" }}>
@@ -120,7 +115,7 @@ export default function TipsPage() {
         <div className="relative z-10 flex-1">
           <p className="text-court-yellow font-bold text-sm tracking-widest uppercase mb-2">ENTRAÎNEMENT</p>
           <h2 className="font-display text-5xl text-white">CONSEILS DU JOUR</h2>
-          <p className="text-white/60 mt-2">Améliore ton jeu chaque jour avec nos astuces de pro</p>
+          <p className="text-white/60 mt-2">Articles complets rédigés par des coachs — clique pour lire</p>
         </div>
         <div className="relative z-10 hidden md:block animate-float">
           <TennisRacket size={90} color="#F6ED5B" />
@@ -131,26 +126,20 @@ export default function TipsPage() {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex gap-2 flex-wrap">
           {categories.map(c => (
-            <button
-              key={c}
-              onClick={() => setCategory(c)}
+            <button key={c} onClick={() => setCategory(c)}
               className={`text-sm font-bold px-3 py-1.5 rounded-xl transition-all ${
                 category === c ? "bg-court-green text-white" : "bg-white text-gray-500 border border-gray-200 hover:border-court-green"
-              }`}
-            >
+              }`}>
               {c}
             </button>
           ))}
         </div>
         <div className="flex gap-2 flex-wrap sm:ml-auto">
           {levels.map(l => (
-            <button
-              key={l}
-              onClick={() => setLevel(l)}
+            <button key={l} onClick={() => setLevel(l)}
               className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all ${
                 level === l ? "bg-court-blue text-white" : "bg-white text-gray-500 border border-gray-200 hover:border-court-blue"
-              }`}
-            >
+              }`}>
               {l}
             </button>
           ))}
@@ -158,13 +147,26 @@ export default function TipsPage() {
       </div>
 
       {/* Tips grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filtered.map((tip, i) => (
-          <TipCard key={tip.id} tip={tip} isFeatured={i === 0 && category === "Tous" && level === "Tous niveaux"} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="card h-52 animate-pulse bg-gray-100" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((tip, i) => (
+            <TipCard
+              key={tip.id}
+              tip={tip}
+              isFeatured={i === 0 && category === "Tous" && level === "Tous niveaux"}
+              onRead={() => setSelectedTip(tip)}
+            />
+          ))}
+        </div>
+      )}
 
-      {filtered.length === 0 && (
+      {!loading && filtered.length === 0 && (
         <div className="text-center py-16">
           <TennisBall size={60} animate />
           <p className="text-gray-400 mt-4 font-medium">Aucun conseil pour ces filtres...</p>
@@ -175,12 +177,13 @@ export default function TipsPage() {
         </div>
       )}
 
-      {/* Challenge box */}
       <div className="rounded-2xl bg-court-yellow p-6 flex items-center gap-4">
         <span className="text-4xl">💪</span>
         <div>
           <h4 className="font-black text-court-green text-lg">Défi entraînement !</h4>
-          <p className="text-court-green/70 text-sm">Essaie le conseil du jour pendant ta prochaine séance et partage tes progrès avec tes amis !</p>
+          <p className="text-court-green/70 text-sm">
+            Lis le conseil du jour et essaie-le pendant ta prochaine séance. Partage tes progrès avec tes amis !
+          </p>
         </div>
       </div>
     </div>

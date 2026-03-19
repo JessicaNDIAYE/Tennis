@@ -1,5 +1,8 @@
 import { useState } from "react";
 import "./index.css";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import LandingPage from "./pages/LandingPage";
+import AuthPage from "./pages/AuthPage";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import ScoreBoard from "./components/ScoreBoard";
@@ -8,6 +11,7 @@ import Players from "./components/Players";
 import BadgesPage from "./components/BadgesPage";
 import TipsPage from "./components/TipsPage";
 import NewsPage from "./components/NewsPage";
+import WatchPage from "./pages/WatchPage";
 
 const pages = {
   dashboard: Dashboard,
@@ -17,43 +21,43 @@ const pages = {
   badges: BadgesPage,
   tips: TipsPage,
   news: NewsPage,
+  watch: WatchPage,
 };
 
+const navItems = [
+  { id: "dashboard", icon: "🏠", label: "Accueil" },
+  { id: "scoreboard", icon: "🏆", label: "Classement" },
+  { id: "matches", icon: "🎾", label: "Matchs" },
+  { id: "players", icon: "👥", label: "Joueurs" },
+  { id: "badges", icon: "🎖️", label: "Badges" },
+  { id: "tips", icon: "💡", label: "Conseils" },
+  { id: "news", icon: "📰", label: "Actualités" },
+  { id: "watch", icon: "⌚", label: "Ma Montre" },
+];
+
 function MobileNav({ activePage, onNavigate }) {
-  const navItems = [
-    { id: "dashboard", icon: "🏠", label: "Accueil" },
-    { id: "scoreboard", icon: "🏆", label: "Classement" },
-    { id: "matches", icon: "🎾", label: "Matchs" },
-    { id: "players", icon: "👥", label: "Joueurs" },
-    { id: "tips", icon: "💡", label: "Conseils" },
-  ];
+  const items = navItems.slice(0, 5);
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-court-green border-t border-white/10 flex lg:hidden z-50">
-      {navItems.map(item => (
-        <button
-          key={item.id}
-          onClick={() => onNavigate(item.id)}
+      {items.map(item => (
+        <button key={item.id} onClick={() => onNavigate(item.id)}
           className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors
-            ${activePage === item.id ? "text-court-yellow" : "text-white/50"}`}
-        >
+            ${activePage === item.id ? "text-court-yellow" : "text-white/50"}`}>
           <span className="text-lg">{item.icon}</span>
-          <span className="hidden xs:block">{item.label}</span>
         </button>
       ))}
     </nav>
   );
 }
 
-function Header({ activePage }) {
+function Header({ activePage, onNavigate }) {
+  const { profile, signOut } = useAuth();
+  const [showMenu, setShowMenu] = useState(false);
   const titles = {
-    dashboard: "Tableau de Bord",
-    scoreboard: "Classement",
-    matches: "Mes Matchs",
-    players: "Joueurs",
-    badges: "Badges",
-    tips: "Conseils",
-    news: "Actualités",
+    dashboard: "Tableau de Bord", scoreboard: "Classement", matches: "Mes Matchs",
+    players: "Joueurs", badges: "Badges", tips: "Conseils", news: "Actualités", watch: "Ma Montre",
   };
+
   return (
     <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
       <div className="flex items-center gap-3">
@@ -68,39 +72,89 @@ function Header({ activePage }) {
       <div className="flex items-center gap-3">
         <span className="hidden sm:flex items-center gap-2 text-xs text-gray-400 bg-court-cream px-3 py-1.5 rounded-full">
           <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          En ligne · 5 joueurs
+          {profile?.username || "En ligne"}
         </span>
-        <div className="w-9 h-9 bg-court-blue rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
-          A
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="w-9 h-9 bg-court-blue rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+          >
+            {profile?.avatar_emoji || "🎾"}
+          </button>
+          {showMenu && (
+            <div className="absolute right-0 top-12 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 w-52">
+              <div className="px-4 py-3 border-b border-gray-100">
+                <p className="font-bold text-gray-800 text-sm">{profile?.username}</p>
+                <p className="text-xs text-gray-400">{profile?.level}</p>
+              </div>
+              <button onClick={() => { onNavigate("watch"); setShowMenu(false); }}
+                className="w-full text-left px-4 py-3 text-sm hover:bg-court-cream transition-colors flex items-center gap-2">
+                ⌚ Ma Montre
+              </button>
+              <button onClick={() => { signOut(); setShowMenu(false); }}
+                className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2">
+                🚪 Se déconnecter
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
   );
 }
 
-export default function App() {
+function AppShell() {
   const [activePage, setActivePage] = useState("dashboard");
   const PageComponent = pages[activePage] || Dashboard;
 
   return (
     <div className="flex min-h-screen bg-court-cream">
-      {/* Sidebar (desktop) */}
       <div className="hidden lg:block flex-shrink-0">
         <div className="sticky top-0 h-screen overflow-y-auto">
           <Sidebar activePage={activePage} onNavigate={setActivePage} />
         </div>
       </div>
-
-      {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <Header activePage={activePage} />
+        <Header activePage={activePage} onNavigate={setActivePage} />
         <main className="flex-1 p-4 sm:p-6 pb-24 lg:pb-6 max-w-5xl mx-auto w-full">
           <PageComponent onNavigate={setActivePage} />
         </main>
       </div>
-
-      {/* Mobile bottom nav */}
       <MobileNav activePage={activePage} onNavigate={setActivePage} />
     </div>
+  );
+}
+
+function AppRouter() {
+  const { session } = useAuth();
+  const [view, setView] = useState("landing"); // "landing" | "auth"
+
+  // session === undefined = still loading
+  if (session === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-court-green">
+        <div className="text-center text-white">
+          <div className="text-6xl mb-4 animate-bounce">🎾</div>
+          <p className="font-display text-3xl text-court-yellow">ACE Tennis Hub</p>
+          <p className="text-white/50 text-sm mt-2">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Logged in → show app
+  if (session) return <AppShell />;
+
+  // Not logged in
+  if (view === "auth") return <AuthPage onBack={() => setView("landing")} />;
+
+  return <LandingPage onEnter={() => setView("auth")} />;
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRouter />
+    </AuthProvider>
   );
 }
