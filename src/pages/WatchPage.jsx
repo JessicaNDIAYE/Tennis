@@ -5,7 +5,7 @@ import { NetPattern } from "../components/TennisIllustrations";
 
 // ─── Config ────────────────────────────────────────────────
 const SUPABASE_FUNCTIONS_URL = "https://tvklioergzytwupzxfyi.supabase.co/functions/v1";
-const STRAVA_CLIENT_ID = import.meta.env.VITE_STRAVA_CLIENT_ID;
+const STRAVA_CLIENT_ID = "213739";
 const STRAVA_SCOPES = "read,activity:read";
 
 // ─── Device catalogue ──────────────────────────────────────
@@ -287,12 +287,9 @@ export default function WatchPage() {
 
   const connectStrava = () => {
     if (!session) return;
-    if (!STRAVA_CLIENT_ID) {
-      showNotif("⚠️ VITE_STRAVA_CLIENT_ID non configuré dans .env — voir le guide ci-dessous.");
-      return;
-    }
     const redirectUri = encodeURIComponent(`${SUPABASE_FUNCTIONS_URL}/strava-oauth`);
-    const state = encodeURIComponent(session.user.id);
+    const returnUrl = window.location.origin + "/watch";
+    const state = encodeURIComponent(session.user.id + "|" + returnUrl);
     const url = `https://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${STRAVA_SCOPES}&state=${state}&approval_prompt=force`;
     window.location.href = url;
   };
