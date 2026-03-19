@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { usePlayers, useMatches, useBadges } from "../hooks/useTennisData";
-import { PlayerAvatar, BadgeFrame } from "./TennisIllustrations";
+import { PlayerAvatar } from "./TennisIllustrations";
 import { TennisBall } from "./TennisIllustrations";
+import { BadgeSVGById } from "./BadgeSVGs";
 
 function PlayerCard({ player, onClick, isSelected, userBadgeMap, allBadges }) {
   const winRate = (player.wins + player.losses) > 0
@@ -58,11 +59,9 @@ function PlayerCard({ player, onClick, isSelected, userBadgeMap, allBadges }) {
         </div>
       )}
 
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-1 flex-wrap">
         {earnedBadges.slice(0, 4).map(b => (
-          <BadgeFrame key={b.id} color={b.color} borderColor={b.border_color} size={36} rarity={b.rarity}>
-            {b.icon}
-          </BadgeFrame>
+          <BadgeSVGById key={b.id} id={b.id} size={36} />
         ))}
         {earnedBadges.length > 4 && (
           <span className="text-xs text-gray-400 font-bold">+{earnedBadges.length - 4}</span>
@@ -117,9 +116,7 @@ function PlayerDetail({ player, playerMatches, allBadges, badgeIds }) {
           <div className="flex flex-wrap gap-3">
             {earnedBadges.map(b => (
               <div key={b.id} className="flex flex-col items-center gap-1">
-                <BadgeFrame color={b.color} borderColor={b.border_color} size={52} rarity={b.rarity}>
-                  {b.icon}
-                </BadgeFrame>
+                <BadgeSVGById id={b.id} size={52} />
                 <span className="text-xs text-gray-500 text-center max-w-[60px] leading-tight">{b.name}</span>
               </div>
             ))}
