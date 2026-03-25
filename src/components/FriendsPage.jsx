@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { usePlayers } from "../hooks/useTennisData";
 import { PlayerAvatar } from "./TennisIllustrations";
+import { useNotifications } from "../hooks/useTennisData";
 
 const COLORS = ["#1C55DB", "#1E4B33", "#FCA833", "#A8D84E", "#C17B5A", "#8B5CF6", "#EC4899"];
 
@@ -105,6 +106,15 @@ export default function FriendsPage() {
     await supabase.from("tennis_friendships").insert({
       user_id: session.user.id,
       friend_id: friendUserId,
+    });
+    // Notify the new friend
+    const myProfile = players.find(p => p.user_id === session.user.id)
+      || searchResults.find(p => p.user_id === session.user.id);
+    await supabase.from("tennis_notifications").insert({
+      user_id: friendUserId,
+      from_user_id: session.user.id,
+      type: "friend_added",
+      message: `👥 ${myProfile?.username || "Quelqu'un"} t'a ajouté comme ami !`,
     });
     await loadFriends();
   }

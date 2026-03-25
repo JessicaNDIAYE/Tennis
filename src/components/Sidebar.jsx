@@ -7,6 +7,7 @@ const navItems = [
   { id: "matches",    label: "Mes Matchs" },
   { id: "players",    label: "Joueurs" },
   { id: "friends",    label: "Amis" },
+  { id: "groups",     label: "Groupes" },
   { id: "badges",     label: "Badges" },
   { id: "tips",       label: "Conseils du Jour" },
   { id: "news",       label: "Actualités" },

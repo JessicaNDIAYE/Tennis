@@ -210,6 +210,26 @@ export function IconFriends({ size = 22, active = false }) {
   );
 }
 
+export function IconGroups({ size = 22, active = false }) {
+  const c = active ? "#F6ED5B" : "white";
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Three people */}
+      <circle cx="12" cy="6" r="3" stroke={c} strokeWidth="1.8"
+        fill={active ? "rgba(246,237,91,0.2)" : "rgba(255,255,255,0.1)"} />
+      <path d="M6 20 Q6 14 12 14 Q18 14 18 20" stroke={c} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <circle cx="5" cy="8" r="2.2" stroke={c} strokeWidth="1.4"
+        fill={active ? "rgba(246,237,91,0.1)" : "rgba(255,255,255,0.08)"} />
+      <path d="M1 19 Q1 14 5 14 Q7.5 14 8.5 16" stroke={c} strokeWidth="1.4" strokeLinecap="round" fill="none" />
+      <circle cx="19" cy="8" r="2.2" stroke={c} strokeWidth="1.4"
+        fill={active ? "rgba(246,237,91,0.1)" : "rgba(255,255,255,0.08)"} />
+      <path d="M23 19 Q23 14 19 14 Q16.5 14 15.5 16" stroke={c} strokeWidth="1.4" strokeLinecap="round" fill="none" />
+      {/* Star center */}
+      <circle cx="12" cy="6" r="1.2" fill={active ? "#F6ED5B" : "#A8D84E"} />
+    </svg>
+  );
+}
+
 export function IconRules({ size = 22, active = false }) {
   const c = active ? "#F6ED5B" : "white";
   return (
@@ -238,6 +258,7 @@ export const NAV_ICONS = {
   news:       IconNews,
   watch:      IconWatch,
   friends:    IconFriends,
+  groups:     IconGroups,
   rules:      IconRules,
   profile:    IconProfile,
 };

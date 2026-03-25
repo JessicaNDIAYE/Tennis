@@ -15,6 +15,8 @@ import WatchPage from "./pages/WatchPage";
 import FriendsPage from "./components/FriendsPage";
 import RulesPage from "./components/RulesPage";
 import ProfilePage from "./components/ProfilePage";
+import GroupsPage from "./components/GroupsPage";
+import NotificationsPanel from "./components/NotificationsPanel";
 
 const pages = {
   dashboard: Dashboard,
@@ -26,6 +28,7 @@ const pages = {
   news: NewsPage,
   watch: WatchPage,
   friends: FriendsPage,
+  groups: GroupsPage,
   rules: RulesPage,
   profile: ProfilePage,
 };
@@ -36,6 +39,7 @@ const navItems = [
   { id: "matches",    icon: "🎾", label: "Matchs" },
   { id: "players",    icon: "👥", label: "Joueurs" },
   { id: "friends",    icon: "❤️", label: "Amis" },
+  { id: "groups",     icon: "🤝", label: "Groupes" },
   { id: "badges",     icon: "🎖️", label: "Badges" },
   { id: "tips",       icon: "💡", label: "Conseils" },
   { id: "news",       icon: "📰", label: "Actus" },
@@ -144,7 +148,7 @@ function Header({ activePage, onNavigate, onOpenDrawer }) {
   const titles = {
     dashboard: "Tableau de Bord", scoreboard: "Classement", matches: "Mes Matchs",
     players: "Joueurs", badges: "Badges", tips: "Conseils", news: "Actualités",
-    watch: "Ma Montre", friends: "Amis", rules: "Règles du Tennis", profile: "Mon Profil",
+    watch: "Ma Montre", friends: "Amis", groups: "Groupes", rules: "Règles du Tennis", profile: "Mon Profil",
   };
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -186,6 +190,7 @@ function Header({ activePage, onNavigate, onOpenDrawer }) {
           <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
           {profile?.username || "En ligne"}
         </span>
+        <NotificationsPanel />
         <div className="relative">
           <button
             onClick={e => { e.stopPropagation(); setShowMenu(m => !m); }}
