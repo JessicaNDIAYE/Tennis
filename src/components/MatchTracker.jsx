@@ -9,11 +9,30 @@ const surfaces = [
 ];
 
 // ─── Match card ───────────────────────────────────────────────────────────────
+function TeamBox({ players, won }) {
+  return (
+    <div className={`flex-1 p-3 rounded-xl text-center ${won ? "bg-green-50 border-2 border-green-400" : "bg-gray-50 border-2 border-transparent"}`}>
+      <div className="flex justify-center gap-1 mb-1">
+        {players.map((p, i) => (
+          <span key={i} className="text-2xl">{p?.avatar_emoji || "🎾"}</span>
+        ))}
+      </div>
+      <p className={`font-bold text-sm leading-tight ${won ? "text-green-700" : "text-gray-600"}`}>
+        {players.map(p => p?.username || "?").join(" + ")}
+      </p>
+      {won && <span className="text-xs text-green-600 font-black mt-0.5 block">🏆 GAGNÉ</span>}
+    </div>
+  );
+}
+
 function MatchCard({ match }) {
-  const p1 = match.player1;
-  const p2 = match.player2;
   const surface = surfaces.find(s => s.id === match.surface) || surfaces[1];
   const isDouble = match.match_type === "double";
+
+  const teamA = isDouble ? [match.player1, match.player3] : [match.player1];
+  const teamB = isDouble ? [match.player2, match.player4] : [match.player2];
+  const teamAWon = match.winner_id === match.player1_id;
+  const teamBWon = match.winner_id === match.player2_id;
 
   return (
     <div className="card hover:shadow-lg transition-shadow">
@@ -24,50 +43,20 @@ function MatchCard({ match }) {
             {surface.emoji} {surface.label}
           </span>
           {isDouble && (
-            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-600">
-              👥 Double
-            </span>
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-600">👥 Double</span>
           )}
         </div>
         <span className="text-xs text-gray-400">
-          {match.played_at?.slice(0, 10)} · {match.duration_min} min
+          {match.played_at?.slice(0, 10)} · {match.duration_min}min
         </span>
       </div>
-
       <div className="flex items-center gap-3">
-        {/* Team A */}
-        <div className={`flex-1 text-center p-3 rounded-xl ${match.winner_id === match.player1_id ? "bg-green-50 border-2 border-green-400" : "bg-gray-50"}`}>
-          <div className="text-2xl mb-1">{p1?.avatar_emoji || "🎾"}</div>
-          <p className={`font-bold text-sm ${match.winner_id === match.player1_id ? "text-green-700" : "text-gray-600"}`}>
-            {p1?.username || "?"}
-          </p>
-          {isDouble && match.player3_id && (
-            <p className="text-xs text-gray-400 mt-0.5">+ partenaire</p>
-          )}
-          {match.winner_id === match.player1_id && (
-            <span className="text-xs text-green-600 font-black">🏆 GAGNÉ</span>
-          )}
-        </div>
-
-        {/* Score */}
-        <div className="text-center flex-shrink-0 px-2">
+        <TeamBox players={teamA} won={teamAWon} />
+        <div className="text-center flex-shrink-0">
           <div className="font-display text-2xl sm:text-3xl text-court-blue tracking-wider">{match.score}</div>
           <div className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">VS</div>
         </div>
-
-        {/* Team B */}
-        <div className={`flex-1 text-center p-3 rounded-xl ${match.winner_id === match.player2_id ? "bg-green-50 border-2 border-green-400" : "bg-gray-50"}`}>
-          <div className="text-2xl mb-1">{p2?.avatar_emoji || "🎾"}</div>
-          <p className={`font-bold text-sm ${match.winner_id === match.player2_id ? "text-green-700" : "text-gray-600"}`}>
-            {p2?.username || "?"}
-          </p>
-          {isDouble && match.player4_id && (
-            <p className="text-xs text-gray-400 mt-0.5">+ partenaire</p>
-          )}
-          {match.winner_id === match.player2_id && (
-            <span className="text-xs text-green-600 font-black">🏆 GAGNÉ</span>
-          )}
-        </div>
+        <TeamBox players={teamB} won={teamBWon} />
       </div>
     </div>
   );

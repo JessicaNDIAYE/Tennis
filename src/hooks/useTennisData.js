@@ -64,20 +64,41 @@ export function useMatches() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchMatches = () => {
-    supabase
+  const fetchMatches = async () => {
+    // Step 1: fetch raw matches
+    const { data: matchData, error } = await supabase
       .from("tennis_matches")
-      .select(`
-        *,
-        player1:tennis_profiles!tennis_matches_player1_id_fkey(username, avatar_emoji, user_id),
-        player2:tennis_profiles!tennis_matches_player2_id_fkey(username, avatar_emoji, user_id),
-        winner:tennis_profiles!tennis_matches_winner_id_fkey(username, avatar_emoji, user_id)
-      `)
-      .order("played_at", { ascending: false })
-      .then(({ data }) => {
-        setMatches(data || []);
-        setLoading(false);
-      });
+      .select("*")
+      .order("played_at", { ascending: false });
+
+    if (error || !matchData) { setMatches([]); setLoading(false); return; }
+
+    // Step 2: gather all unique player IDs
+    const playerIds = [...new Set([
+      ...matchData.map(m => m.player1_id),
+      ...matchData.map(m => m.player2_id),
+      ...matchData.map(m => m.winner_id),
+      ...matchData.map(m => m.player3_id),
+      ...matchData.map(m => m.player4_id),
+    ].filter(Boolean))];
+
+    // Step 3: fetch their profiles
+    const { data: profiles } = playerIds.length > 0
+      ? await supabase.from("tennis_profiles").select("user_id, username, avatar_emoji, avatar_url").in("user_id", playerIds)
+      : { data: [] };
+
+    const pm = Object.fromEntries((profiles || []).map(p => [p.user_id, p]));
+
+    // Step 4: enrich matches
+    setMatches(matchData.map(m => ({
+      ...m,
+      player1: pm[m.player1_id] || null,
+      player2: pm[m.player2_id] || null,
+      winner:  pm[m.winner_id]  || null,
+      player3: pm[m.player3_id] || null,
+      player4: pm[m.player4_id] || null,
+    })));
+    setLoading(false);
   };
 
   useEffect(() => { fetchMatches(); }, []);
@@ -244,97 +265,41 @@ export function useAddMatch() {
     if (!session) throw new Error("Non connecté");
     setLoading(true);
     try {
-      const isDouble = matchData.match_type === "double";
-
+      // Insert match — the DB trigger handles stat updates and badge awards
       const { data, error } = await supabase
         .from("tennis_matches")
         .insert({
-          player1_id: matchData.player1_id,
-          player2_id: matchData.player2_id,
-          player3_id: matchData.player3_id || null,
-          player4_id: matchData.player4_id || null,
-          score: matchData.score,
-          winner_id: matchData.winner_id,
-          surface: matchData.surface,
+          player1_id:   matchData.player1_id,
+          player2_id:   matchData.player2_id,
+          player3_id:   matchData.player3_id || null,
+          player4_id:   matchData.player4_id || null,
+          score:        matchData.score,
+          winner_id:    matchData.winner_id,
+          surface:      matchData.surface,
           duration_min: matchData.duration_min,
-          match_type: matchData.match_type || "simple",
-          played_at: new Date().toISOString(),
+          match_type:   matchData.match_type || "simple",
+          played_at:    new Date().toISOString(),
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Determine winners and losers
-      const teamAWins = matchData.winner_id === matchData.player1_id;
-      const winners = isDouble
-        ? [matchData.player1_id, matchData.player3_id].filter(Boolean)
-        : [matchData.winner_id];
-      const losers = isDouble
-        ? [matchData.player2_id, matchData.player4_id].filter(Boolean)
-        : [matchData.player1_id === matchData.winner_id ? matchData.player2_id : matchData.player1_id];
+      // Notify all other players in the match
+      const allPlayers = [
+        matchData.player1_id,
+        matchData.player2_id,
+        matchData.player3_id,
+        matchData.player4_id,
+      ].filter(Boolean);
 
-      // Update winners
-      for (const wId of winners) {
-        const { data: wp } = await supabase
-          .from("tennis_profiles")
-          .select("wins, streak")
-          .eq("user_id", wId)
-          .single();
-        if (wp) {
-          const newWins = (wp.wins || 0) + 1;
-          const newStreak = (wp.streak || 0) + 1;
-          await supabase
-            .from("tennis_profiles")
-            .update({ wins: newWins, streak: newStreak })
-            .eq("user_id", wId);
-
-          const badgesToCheck = [
-            { id: "first_win",   condition: newWins >= 1 },
-            { id: "five_wins",   condition: newWins >= 5 },
-            { id: "ten_wins",    condition: newWins >= 10 },
-            { id: "twenty_wins", condition: newWins >= 20 },
-            { id: "streak3",     condition: newStreak >= 3 },
-            { id: "streak5",     condition: newStreak >= 5 },
-            { id: "streak10",    condition: newStreak >= 10 },
-          ];
-          for (const b of badgesToCheck) {
-            if (b.condition) {
-              await supabase.from("tennis_user_badges")
-                .insert({ user_id: wId, badge_id: b.id })
-                .then(() => {});
-            }
-          }
-        }
-      }
-
-      // Update losers
-      for (const lId of losers) {
-        const { data: lp } = await supabase
-          .from("tennis_profiles")
-          .select("losses")
-          .eq("user_id", lId)
-          .single();
-        if (lp) {
-          await supabase
-            .from("tennis_profiles")
-            .update({ losses: (lp.losses || 0) + 1, streak: 0 })
-            .eq("user_id", lId);
-        }
-      }
-
-      // Notify opponents that a match was added
-      const notifTargets = isDouble
-        ? [matchData.player2_id, matchData.player3_id, matchData.player4_id].filter(Boolean)
-        : [matchData.player1_id === session.user.id ? matchData.player2_id : matchData.player1_id];
-
-      for (const targetId of notifTargets) {
+      for (const targetId of allPlayers) {
         if (targetId !== session.user.id) {
           await supabase.from("tennis_notifications").insert({
-            user_id: targetId,
+            user_id:      targetId,
             from_user_id: session.user.id,
-            type: "match_added",
-            message: `🎾 Un match a été enregistré avec toi.`,
+            type:         "match_added",
+            message:      `🎾 Un match a été enregistré avec toi !`,
           });
         }
       }
